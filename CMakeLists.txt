@@ -16,6 +16,7 @@ add_library(OpenCLWrapper STATIC
 
   OCLW_Core.hpp OCLW_CU.hpp OCLW_Kernel.hpp
   OCLW_Core.cpp OCLW_CU.cpp
+  LICENSE.md
 )
 
 target_link_libraries(OpenCLWrapper PRIVATE Qt${QT_VERSION_MAJOR}::Core)
