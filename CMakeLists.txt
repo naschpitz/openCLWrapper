@@ -12,8 +12,6 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 
 add_library(OpenCLWrapper STATIC
-
-
   OCLW_Core.hpp OCLW_CU.hpp OCLW_Kernel.hpp
   OCLW_Core.cpp OCLW_CU.cpp
   LICENSE.md
