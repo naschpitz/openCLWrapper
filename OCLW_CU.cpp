@@ -82,15 +82,15 @@ void ComputeUnit::buildProgram()
   std::cout.flush();
 }
 
+void ComputeUnit::setVerbose(bool verbose)
+{
+  this->verbose = verbose;
+}
+
 void ComputeUnit::addSource(const std::string& sourceCode)
 {
   // Store the string - sources will be rebuilt from sourceStrings in buildProgram()
   this->sourceStrings.push_back(sourceCode);
-}
-
-void ComputeUnit::setVerbose(bool verbose)
-{
-  this->verbose = verbose;
 }
 
 void ComputeUnit::addKernel(const std::string& kernelName, ulong nElements, ulong offset)

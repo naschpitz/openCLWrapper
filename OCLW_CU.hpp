@@ -23,8 +23,6 @@ namespace OpenCLWrapper
       ComputeUnit();
       ComputeUnit(const cl::Device& device, uint index, double fraction, bool last);
 
-      void setVerbose(bool verbose);
-
     private:
       uint index;
       double fraction;
@@ -50,6 +48,8 @@ namespace OpenCLWrapper
       void buildProgram();
 
     public:
+      void setVerbose(bool verbose);
+
       void addSource(const std::string& sourceCode);
       void addKernel(const std::string& kernelName, ulong nElements, ulong offset = 0);
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);

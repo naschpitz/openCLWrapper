@@ -25,6 +25,7 @@ namespace OpenCLWrapper
       cl::Program::Sources sources;
 
       bool useMultipleGPUs;
+      bool verbose = true;
       std::vector<const cl::Device*> devicesInUse;
 
       void buildComputeUnits();
@@ -75,9 +76,6 @@ namespace OpenCLWrapper
 
       static void initialize();
       static std::map<const cl::Device*, uint>& getDevicesUsage();
-
-    private:
-      bool verbose = true;
   };
 
   template<class T> void Core::allocateBuffer(const std::string& name, ulong size)
