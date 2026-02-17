@@ -57,16 +57,13 @@ namespace OpenCLWrapper
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
       void clearKernels();
 
-    private:
-      bool verbose = true;
-
       template<class T> void allocateBuffer(const std::string& name, ulong size);
 
       template<class T> void writeBuffer(const std::vector<T>& hBuffer);
-      template<class T> void writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferOffset);
+      template<class T> void writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferWriteOffset);
 
       template<class T> void readBuffer(std::vector<T>& hBuffer);
-      template<class T> void readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferOffset);
+      template<class T> void readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferReadOffset);
 
       template<class T> void syncDevicesBuffers(std::vector<T>& hBuffer);
 
@@ -78,6 +75,9 @@ namespace OpenCLWrapper
 
       static void initialize();
       static std::map<const cl::Device*, uint>& getDevicesUsage();
+
+    private:
+      bool verbose = true;
   };
 
   template<class T> void Core::allocateBuffer(const std::string& name, ulong size)
