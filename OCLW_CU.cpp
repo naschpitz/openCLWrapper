@@ -87,6 +87,11 @@ void ComputeUnit::setVerbose(bool verbose)
   this->verbose = verbose;
 }
 
+bool ComputeUnit::isVerbose() const
+{
+  return this->verbose;
+}
+
 void ComputeUnit::addSource(const std::string& sourceCode)
 {
   // Store the string - sources will be rebuilt from sourceStrings in buildProgram()

@@ -49,6 +49,7 @@ namespace OpenCLWrapper
 
     public:
       void setVerbose(bool verbose);
+      bool isVerbose() const;
 
       void addSource(const std::string& sourceCode);
       void addKernel(const std::string& kernelName, ulong nElements, ulong offset = 0);
