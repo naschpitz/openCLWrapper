@@ -16,6 +16,11 @@ Core::Core(bool useMultipleGPUs)
 {
   this->useMultipleGPUs = useMultipleGPUs;
 
+  // Automatically initialize platforms/devices if not already done
+  if (Core::devices.empty()) {
+    Core::initialize();
+  }
+
   this->buildComputeUnits();
 }
 
