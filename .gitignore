@@ -79,3 +79,4 @@ CMakeLists.txt.user*
 # Augment
 # -------
 .augment/
+INSTRUCTIONS.md
