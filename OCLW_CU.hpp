@@ -121,12 +121,12 @@ namespace OpenCLWrapper
     cl::Buffer dBuffer = this->hdBufferMap[hBufferKey];
 
     uint count = hBuffer.size() * this->fraction;
-    uint offset = this->index * count;
+    uint bufferOffset = this->index * count;  // Same offset for both device read and host write
 
     if(this->last)
-      count = hBuffer.size() - offset;
+      count = hBuffer.size() - bufferOffset;
 
-    this->queue.enqueueReadBuffer(dBuffer, CL_TRUE, sizeof(T) * offset, sizeof(T) * count, hBuffer.data() + offset);
+    this->queue.enqueueReadBuffer(dBuffer, CL_TRUE, sizeof(T) * bufferOffset, sizeof(T) * count, hBuffer.data() + bufferOffset);
   }
 
   template<class T> void ComputeUnit::readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferOffset)
