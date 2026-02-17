@@ -55,10 +55,10 @@ namespace OpenCLWrapper
       template<class T> void allocateBuffer(const std::string& name, ulong size);
 
       template<class T> void writeBuffer(const std::vector<T>& hBuffer);
-      template<class T> void writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferOffset);
+      template<class T> void writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferWriteOffset);
 
       template<class T> void readBuffer(std::vector<T>& hBuffer);
-      template<class T> void readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferOffset);
+      template<class T> void readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferReadOffset);
 
       template<class T> void addArgument(const std::string& kernelName, const std::string& bufferName);
       template<class T> void addArgument(const std::string& kernelName, const std::vector<T>& hBuffer);
@@ -99,7 +99,7 @@ namespace OpenCLWrapper
     this->queue.enqueueWriteBuffer(dBuffer, CL_FALSE, 0, sizeof(T) * hBuffer.size(), hBuffer.data());
   }
 
-  template<class T> void ComputeUnit::writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferOffset)
+  template<class T> void ComputeUnit::writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferWriteOffset)
   {
     std::map<std::string, cl::Buffer>::const_iterator it = this->dBufferMap.find(name);
     cl::Buffer dBuffer;
@@ -112,7 +112,7 @@ namespace OpenCLWrapper
       this->dBufferMap[name] = dBuffer;
     }
 
-    this->queue.enqueueWriteBuffer(dBuffer, CL_FALSE, sizeof(T) * dBufferOffset, sizeof(T) * hBuffer.size(), hBuffer.data());
+    this->queue.enqueueWriteBuffer(dBuffer, CL_FALSE, sizeof(T) * dBufferWriteOffset, sizeof(T) * hBuffer.size(), hBuffer.data());
   }
 
   template<class T> void ComputeUnit::readBuffer(std::vector<T>& hBuffer)
@@ -129,18 +129,18 @@ namespace OpenCLWrapper
     this->queue.enqueueReadBuffer(dBuffer, CL_TRUE, sizeof(T) * bufferOffset, sizeof(T) * count, hBuffer.data() + bufferOffset);
   }
 
-  template<class T> void ComputeUnit::readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferOffset)
+  template<class T> void ComputeUnit::readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferReadOffset)
   {
     cl::Buffer dBuffer = this->dBufferMap[name];
 
     uint count = hBuffer.size() * this->fraction;
     uint hBufferWriteOffset = this->index * count;
-    uint dBufferReadOffset = hBufferWriteOffset + dBufferOffset;
+    uint deviceReadOffset = hBufferWriteOffset + dBufferReadOffset;
 
     if(this->last)
       count = hBuffer.size() - hBufferWriteOffset;
 
-    this->queue.enqueueReadBuffer(dBuffer, CL_TRUE, sizeof(T) * dBufferReadOffset, sizeof(T) * count, hBuffer.data() + hBufferWriteOffset);
+    this->queue.enqueueReadBuffer(dBuffer, CL_TRUE, sizeof(T) * deviceReadOffset, sizeof(T) * count, hBuffer.data() + hBufferWriteOffset);
   }
 
   template<class T> void ComputeUnit::addArgument(const std::string& kernelName, const std::string& bufferName)
