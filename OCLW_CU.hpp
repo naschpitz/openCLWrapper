@@ -100,7 +100,7 @@ namespace OpenCLWrapper
       this->hdBufferMap[hBufferKey] = dBuffer;
     }
 
-    this->queue.enqueueWriteBuffer(dBuffer, CL_TRUE, 0, sizeof(T) * hBuffer.size(), hBuffer.data());
+    this->queue.enqueueWriteBuffer(dBuffer, CL_FALSE, 0, sizeof(T) * hBuffer.size(), hBuffer.data());
   }
 
   template<class T> void ComputeUnit::writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferWriteOffset)
@@ -116,7 +116,7 @@ namespace OpenCLWrapper
       this->dBufferMap[name] = dBuffer;
     }
 
-    this->queue.enqueueWriteBuffer(dBuffer, CL_TRUE, sizeof(T) * dBufferWriteOffset, sizeof(T) * hBuffer.size(), hBuffer.data());
+    this->queue.enqueueWriteBuffer(dBuffer, CL_FALSE, sizeof(T) * dBufferWriteOffset, sizeof(T) * hBuffer.size(), hBuffer.data());
   }
 
   template<class T> void ComputeUnit::readBuffer(std::vector<T>& hBuffer)
