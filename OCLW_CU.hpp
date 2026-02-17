@@ -134,13 +134,13 @@ namespace OpenCLWrapper
     cl::Buffer dBuffer = this->dBufferMap[name];
 
     uint count = hBuffer.size() * this->fraction;
-    uint hBufferOffset = this->index * count;  // Offset in host buffer
-    uint dOffset = hBufferOffset + dBufferOffset;  // Offset in device buffer
+    uint hBufferWriteOffset = this->index * count;
+    uint dBufferReadOffset = hBufferWriteOffset + dBufferOffset;
 
     if(this->last)
-      count = hBuffer.size() - hBufferOffset;
+      count = hBuffer.size() - hBufferWriteOffset;
 
-    this->queue.enqueueReadBuffer(dBuffer, CL_TRUE, sizeof(T) * dOffset, sizeof(T) * count, hBuffer.data() + hBufferOffset);
+    this->queue.enqueueReadBuffer(dBuffer, CL_TRUE, sizeof(T) * dBufferReadOffset, sizeof(T) * count, hBuffer.data() + hBufferWriteOffset);
   }
 
   template<class T> void ComputeUnit::addArgument(const std::string& kernelName, const std::string& bufferName)
