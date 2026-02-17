@@ -132,6 +132,13 @@ void Core::addKernel(const std::string& kernelName, ulong nElements, ulong offse
   }
 }
 
+void Core::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset)
+{
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->addKernel(id, kernelName, nElements, offset);
+  }
+}
+
 void Core::clearKernels()
 {
   for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {

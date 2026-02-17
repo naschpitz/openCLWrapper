@@ -90,19 +90,23 @@ void ComputeUnit::addSource(const std::string& sourceCode)
 
 void ComputeUnit::addKernel(const std::string& kernelName, ulong nElements, ulong offset)
 {
+  this->addKernel(kernelName, kernelName, nElements, offset);
+}
+
+void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset)
+{
   if(!this->programBuilt)
     this->buildProgram();
 
-  // Alternative way to run the kernel.
   Kernel kernel;
-  kernel.name = kernelName;
+  kernel.name = id;  // Use id for argument lookup
   kernel.nElements = nElements;
   kernel.offset = offset;
 
-  std::cout << "Building kernel " << kernelName << "...\n";
+  std::cout << "Building kernel " << kernelName << " (id: " << id << ")...\n";
 
   cl_int result;
-  kernel.kernel = cl::Kernel(this->program, kernelName.c_str(), &result);
+  kernel.kernel = cl::Kernel(this->program, kernelName.c_str(), &result);  // Use kernelName for OpenCL lookup
 
   if(result != CL_SUCCESS) {
     std::cout << " Error creating kernel " << kernelName << ": " << result << "\n";

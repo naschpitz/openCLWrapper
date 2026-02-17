@@ -51,6 +51,7 @@ namespace OpenCLWrapper
 
       void addSourceFile(std::string fileName);
       void addKernel(const std::string& kernelName, ulong nElements, ulong offset = 0);
+      void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
       void clearKernels();
 
       template<class T> void allocateBuffer(const std::string& name, ulong size);
