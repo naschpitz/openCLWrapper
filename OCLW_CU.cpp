@@ -53,6 +53,13 @@ void ComputeUnit::buildProgram()
 {
   std::cout << "Building program...\n";
 
+  // Rebuild sources from sourceStrings to ensure pointers are valid
+  // (vector reallocation may have invalidated previous c_str() pointers)
+  this->sources.clear();
+  for (const std::string& str : this->sourceStrings) {
+    this->sources.push_back({str.c_str(), str.length()});
+  }
+
   cl_int result;
 
   this->program = cl::Program(this->context, this->sources, &result);
@@ -77,7 +84,8 @@ void ComputeUnit::buildProgram()
 
 void ComputeUnit::addSource(const std::string& sourceCode)
 {
-  this->sources.push_back({sourceCode.c_str(), sourceCode.length()});
+  // Store the string - sources will be rebuilt from sourceStrings in buildProgram()
+  this->sourceStrings.push_back(sourceCode);
 }
 
 void ComputeUnit::addKernel(const std::string& kernelName, ulong nElements, ulong offset)

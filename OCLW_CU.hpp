@@ -37,6 +37,7 @@ namespace OpenCLWrapper
       std::vector<Kernel> kernels;
 
       cl::Program::Sources sources;
+      std::vector<std::string> sourceStrings;  // Store actual strings to keep pointers valid
 
       std::map<void*, cl::Buffer> hdBufferMap;
       std::map<std::string, cl::Buffer> dBufferMap;
