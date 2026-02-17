@@ -125,6 +125,19 @@ void Core::addSourceFile(std::string fileName)
   std::cout.flush();
 }
 
+void Core::setVerbose(bool verbose)
+{
+  this->verbose = verbose;
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->setVerbose(verbose);
+  }
+}
+
+bool Core::isVerbose() const
+{
+  return this->verbose;
+}
+
 void Core::addKernel(const std::string& kernelName, ulong nElements, ulong offset)
 {
   for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {

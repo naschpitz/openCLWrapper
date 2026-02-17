@@ -23,12 +23,15 @@ namespace OpenCLWrapper
       ComputeUnit();
       ComputeUnit(const cl::Device& device, uint index, double fraction, bool last);
 
+      void setVerbose(bool verbose);
+
     private:
       uint index;
       double fraction;
       bool last;
 
       bool programBuilt = false;
+      bool verbose = true;
 
       cl::Device device;
       cl::Context context;

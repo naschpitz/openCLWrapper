@@ -88,6 +88,11 @@ void ComputeUnit::addSource(const std::string& sourceCode)
   this->sourceStrings.push_back(sourceCode);
 }
 
+void ComputeUnit::setVerbose(bool verbose)
+{
+  this->verbose = verbose;
+}
+
 void ComputeUnit::addKernel(const std::string& kernelName, ulong nElements, ulong offset)
 {
   this->addKernel(kernelName, kernelName, nElements, offset);
@@ -103,7 +108,8 @@ void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName
   kernel.nElements = nElements;
   kernel.offset = offset;
 
-  std::cout << "Building kernel " << kernelName << " (id: " << id << ")...\n";
+  if(this->verbose)
+    std::cout << "Building kernel " << kernelName << " (id: " << id << ")...\n";
 
   cl_int result;
   kernel.kernel = cl::Kernel(this->program, kernelName.c_str(), &result);  // Use kernelName for OpenCL lookup
@@ -115,16 +121,20 @@ void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName
 
   this->kernels.push_back(kernel);
 
-  std::cout << " Done!\n";
-  std::cout.flush();
+  if(this->verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
 }
 
 void ComputeUnit::clearKernels()
 {
   this->kernels.clear();
 
-  std::cout << "Kernels cleaned\n";
-  std::cout.flush();
+  if(this->verbose) {
+    std::cout << "Kernels cleaned\n";
+    std::cout.flush();
+  }
 }
 
 void ComputeUnit::run()

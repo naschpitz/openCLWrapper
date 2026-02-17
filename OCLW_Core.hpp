@@ -49,10 +49,16 @@ namespace OpenCLWrapper
       Core(bool useMultipleGPUs = false);
       ~Core();
 
+      void setVerbose(bool verbose);
+      bool isVerbose() const;
+
       void addSourceFile(std::string fileName);
       void addKernel(const std::string& kernelName, ulong nElements, ulong offset = 0);
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
       void clearKernels();
+
+    private:
+      bool verbose = true;
 
       template<class T> void allocateBuffer(const std::string& name, ulong size);
 
