@@ -316,9 +316,5 @@ std::map<const cl::Device*, uint>& Core::getDevicesUsage() {
 }
 
 size_t Core::getNumDevices() {
-  // Automatically initialize platforms/devices if not already done
-  if (Core::devices.empty()) {
-    Core::initialize();
-  }
   return Core::devices.size();
 }
