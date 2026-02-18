@@ -29,6 +29,7 @@ namespace OpenCLWrapper
       std::vector<const cl::Device*> devicesInUse;
 
       void buildComputeUnits();
+      void buildComputeUnitForDevice(int deviceIndex);
 
       void addJobToDevice(const cl::Device& device);
       void removeJobFromDevice(const cl::Device& device);
@@ -48,6 +49,7 @@ namespace OpenCLWrapper
 
     public:
       Core(bool useMultipleGPUs = false);
+      Core(int deviceIndex);  // Constructor to use a specific GPU device by index
       ~Core();
 
       void setVerbose(bool verbose);
@@ -76,6 +78,7 @@ namespace OpenCLWrapper
 
       static void initialize();
       static std::map<const cl::Device*, uint>& getDevicesUsage();
+      static size_t getNumDevices();
   };
 
   template<class T> void Core::allocateBuffer(const std::string& name, ulong size)

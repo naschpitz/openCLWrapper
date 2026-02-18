@@ -24,6 +24,18 @@ Core::Core(bool useMultipleGPUs)
   this->buildComputeUnits();
 }
 
+Core::Core(int deviceIndex)
+{
+  this->useMultipleGPUs = false;
+
+  // Automatically initialize platforms/devices if not already done
+  if (Core::devices.empty()) {
+    Core::initialize();
+  }
+
+  this->buildComputeUnitForDevice(deviceIndex);
+}
+
 Core::~Core()
 {
   for(auto it = this->devicesInUse.begin(); it != this->devicesInUse.end(); it++) {
@@ -97,6 +109,37 @@ void Core::buildComputeUnits()
 
     Core::mutex.unlock();
   }
+
+  std::cout << " Done!\n";
+  std::cout.flush();
+}
+
+void Core::buildComputeUnitForDevice(int deviceIndex)
+{
+  std::cout << "Building compute unit for specific device...\n";
+
+  if (deviceIndex < 0 || static_cast<size_t>(deviceIndex) >= Core::devices.size()) {
+    std::cout << "      Device index " << deviceIndex << " is out of range (0-" << (Core::devices.size() - 1) << ")\n";
+    exit(1);
+  }
+
+  Core::mutex.lock();
+
+  const cl::Device& device = Core::devices[deviceIndex];
+
+  std::cout << "      Using GPU #" << deviceIndex << ": " << device.getInfo<CL_DEVICE_NAME>() << "\n";
+
+  uint index = 0;
+  double fraction = 1;
+  bool last = true;
+
+  ComputeUnit computeUnit = ComputeUnit(device, index, fraction, last);
+
+  Core::addJobToDevice(device);
+
+  this->computeUnits.push_back(computeUnit);
+
+  Core::mutex.unlock();
 
   std::cout << " Done!\n";
   std::cout.flush();
@@ -270,4 +313,12 @@ void Core::initialize() {
 
 std::map<const cl::Device*, uint>& Core::getDevicesUsage() {
   return Core::devicesUsage;
+}
+
+size_t Core::getNumDevices() {
+  // Automatically initialize platforms/devices if not already done
+  if (Core::devices.empty()) {
+    Core::initialize();
+  }
+  return Core::devices.size();
 }
