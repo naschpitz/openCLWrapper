@@ -21,7 +21,7 @@ namespace OpenCLWrapper
   {
     public:
       ComputeUnit();
-      ComputeUnit(const cl::Device& device, uint index, double fraction, bool last);
+      ComputeUnit(const cl::Device& device, uint index, double fraction, bool last, bool verbose = true);
 
     private:
       uint index;

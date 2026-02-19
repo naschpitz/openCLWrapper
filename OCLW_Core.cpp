@@ -11,6 +11,7 @@ std::mutex Core::mutex;
 std::vector<cl::Platform> Core::platforms;
 std::vector<cl::Device> Core::devices;
 std::map<const cl::Device*, uint> Core::devicesUsage;
+bool Core::verbose = true;
 
 Core::Core(bool useMultipleGPUs)
 {
@@ -45,7 +46,7 @@ Core::~Core()
 
 void Core::setVerbose(bool verbose)
 {
-  this->verbose = verbose;
+  Core::verbose = verbose;
   for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->setVerbose(verbose);
   }
@@ -53,15 +54,15 @@ void Core::setVerbose(bool verbose)
 
 bool Core::isVerbose() const
 {
-  return this->verbose;
+  return Core::verbose;
 }
 
 void Core::buildComputeUnits()
 {
-    std::cout << "Building compute units...\n";
+  if(Core::verbose) std::cout << "Building compute units...\n";
 
   if(this->useMultipleGPUs) {
-    std::cout << "      Using all available GPUs.\n";
+    if(Core::verbose) std::cout << "      Using all available GPUs.\n";
 
     for(std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
       uint index = std::distance(Core::devices.begin(), it);
@@ -71,7 +72,7 @@ void Core::buildComputeUnits()
       if(std::distance(it, Core::devices.end()) == 1)
         last = true;
 
-      ComputeUnit computeUnit = ComputeUnit(*it, index, fraction, last);
+      ComputeUnit computeUnit = ComputeUnit(*it, index, fraction, last, Core::verbose);
 
       Core::addJobToDevice(*it);
 
@@ -95,13 +96,13 @@ void Core::buildComputeUnits()
 
     uint deviceIndex = std::distance(itFirst, it);
 
-    std::cout << "      Using GPU #" << deviceIndex << "\n";
+    if(Core::verbose) std::cout << "      Using GPU #" << deviceIndex << "\n";
 
     uint index = 0;
     double fraction = 1;
     bool last = true;
 
-    ComputeUnit computeUnit = ComputeUnit(device, index, fraction, last);
+    ComputeUnit computeUnit = ComputeUnit(device, index, fraction, last, Core::verbose);
 
     Core::addJobToDevice(device);
 
@@ -110,13 +111,15 @@ void Core::buildComputeUnits()
     Core::mutex.unlock();
   }
 
-  std::cout << " Done!\n";
-  std::cout.flush();
+  if(Core::verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
 }
 
 void Core::buildComputeUnitForDevice(int deviceIndex)
 {
-  std::cout << "Building compute unit for specific device...\n";
+  if(Core::verbose) std::cout << "Building compute unit for specific device...\n";
 
   if (deviceIndex < 0 || static_cast<size_t>(deviceIndex) >= Core::devices.size()) {
     std::cout << "      Device index " << deviceIndex << " is out of range (0-" << (Core::devices.size() - 1) << ")\n";
@@ -127,13 +130,13 @@ void Core::buildComputeUnitForDevice(int deviceIndex)
 
   const cl::Device& device = Core::devices[deviceIndex];
 
-  std::cout << "      Using GPU #" << deviceIndex << ": " << device.getInfo<CL_DEVICE_NAME>() << "\n";
+  if(Core::verbose) std::cout << "      Using GPU #" << deviceIndex << ": " << device.getInfo<CL_DEVICE_NAME>() << "\n";
 
   uint index = 0;
   double fraction = 1;
   bool last = true;
 
-  ComputeUnit computeUnit = ComputeUnit(device, index, fraction, last);
+  ComputeUnit computeUnit = ComputeUnit(device, index, fraction, last, Core::verbose);
 
   Core::addJobToDevice(device);
 
@@ -141,8 +144,10 @@ void Core::buildComputeUnitForDevice(int deviceIndex)
 
   Core::mutex.unlock();
 
-  std::cout << " Done!\n";
-  std::cout.flush();
+  if(Core::verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
 }
 
 void Core::addJobToDevice(const cl::Device& device)
@@ -159,13 +164,13 @@ void Core::removeJobFromDevice(const cl::Device& device)
 
 void Core::addSourceFile(std::string fileName)
 {
-  std::cout << "Reading source file...\n";
+  if(Core::verbose) std::cout << "Reading source file...\n";
 
   std::ifstream sourceFile;
   sourceFile.open(fileName); // Open the input file
 
   if((sourceFile.rdstate() & std::ifstream::failbit) != 0) {
-    std::cout << "      Source file not found.\n";
+    std::cout << "      Source file not found: " << fileName << "\n";
     exit(1);
   }
 
@@ -177,8 +182,10 @@ void Core::addSourceFile(std::string fileName)
     it->addSource(sourceCode);
   }
 
-  std::cout << " Done!\n";
-  std::cout.flush();
+  if(Core::verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
 }
 
 void Core::addKernel(const std::string& kernelName, ulong nElements, ulong offset)
@@ -215,7 +222,7 @@ void Core::run()
 
 void Core::buildPlatforms()
 {
-  std::cout << "Building platform...\n";
+  if(Core::verbose) std::cout << "Building platform...\n";
 
   // Get all platforms (drivers).
   cl::Platform::get(&(Core::platforms));
@@ -225,16 +232,18 @@ void Core::buildPlatforms()
     exit(1);
   }
 
-  std::cout << " Done!\n";
-  std::cout.flush();
+  if(Core::verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
 }
 
 void Core::buildDevices()
 {
-  std::cout << "Building devices...\n";
+  if(Core::verbose) std::cout << "Building devices...\n";
 
   for(std::vector<cl::Platform>::iterator it = Core::platforms.begin(); it != Core::platforms.end(); it++) {
-    std::cout << "Platform: " << it->getInfo<CL_PLATFORM_NAME>() << "\n";
+    if(Core::verbose) std::cout << "Platform: " << it->getInfo<CL_PLATFORM_NAME>() << "\n";
 
     it->getDevices(CL_DEVICE_TYPE_GPU, &(Core::devices));
 
@@ -243,13 +252,17 @@ void Core::buildDevices()
       exit(1);
     }
 
-    for(std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
-      std::cout << "      Device: " << it->getInfo<CL_DEVICE_NAME>() << "\n";
+    if(Core::verbose) {
+      for(std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
+        std::cout << "      Device: " << it->getInfo<CL_DEVICE_NAME>() << "\n";
+      }
     }
   }
 
-  std::cout << " Done!\n";
-  std::cout.flush();
+  if(Core::verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
 }
 
 void Core::buildDevicesUsageMap()
@@ -278,6 +291,8 @@ const cl::Device& Core::getAvailableDevice()
 
 void Core::printDevicesInfo()
 {
+  if(!Core::verbose) return;
+
   std::cout << "Devices Information:\n";
 
   for(std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
@@ -304,7 +319,8 @@ void Core::printDevicesInfo()
   std::cout.flush();
 }
 
-void Core::initialize() {
+void Core::initialize(bool verbose) {
+  Core::verbose = verbose;
   Core::buildPlatforms();
   Core::buildDevices();
   Core::buildDevicesUsageMap();

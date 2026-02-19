@@ -9,9 +9,10 @@ ComputeUnit::ComputeUnit()
   this->programBuilt = false;
 }
 
-ComputeUnit::ComputeUnit(const cl::Device& device, uint index, double fraction, bool last)
+ComputeUnit::ComputeUnit(const cl::Device& device, uint index, double fraction, bool last, bool verbose)
 {
   this->programBuilt = false;
+  this->verbose = verbose;
 
   this->device = device;
   this->index = index;
@@ -24,7 +25,7 @@ ComputeUnit::ComputeUnit(const cl::Device& device, uint index, double fraction, 
 
 void ComputeUnit::buildContext()
 {
-  std::cout << "Building context...\n";
+  if(this->verbose) std::cout << "Building context...\n";
 
   cl_int result;
 
@@ -35,23 +36,27 @@ void ComputeUnit::buildContext()
     exit(1);
   }
 
-  std::cout << " Done!\n";
-  std::cout.flush();
+  if(this->verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
 }
 
 void ComputeUnit::buildQueue()
 {
-  std::cout << "Building queue...\n";
+  if(this->verbose) std::cout << "Building queue...\n";
 
   this->queue = cl::CommandQueue(this->context, this->device);
 
-  std::cout << " Done!\n";
-  std::cout.flush();
+  if(this->verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
 }
 
 void ComputeUnit::buildProgram()
 {
-  std::cout << "Building program...\n";
+  if(this->verbose) std::cout << "Building program...\n";
 
   // Rebuild sources from sourceStrings to ensure pointers are valid
   // (vector reallocation may have invalidated previous c_str() pointers)
@@ -78,8 +83,10 @@ void ComputeUnit::buildProgram()
 
   this->programBuilt = true;
 
-  std::cout << " Done!\n";
-  std::cout.flush();
+  if(this->verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
 }
 
 void ComputeUnit::setVerbose(bool verbose)
