@@ -19,48 +19,25 @@ namespace OpenCLWrapper
 {
   class Core
   {
-    private:
-      std::vector<ComputeUnit> computeUnits;
-
-      cl::Program::Sources sources;
-
-      bool useMultipleGPUs;
-      std::vector<const cl::Device*> devicesInUse;
-
-      void buildComputeUnits();
-      void buildComputeUnitForDevice(int deviceIndex);
-
-      void addJobToDevice(const cl::Device& device);
-      void removeJobFromDevice(const cl::Device& device);
-
-      static std::mutex mutex;
-
-      static std::vector<cl::Platform> platforms;
-      static std::vector<cl::Device> devices;
-      static std::map<const cl::Device*, uint> devicesUsage;
-
-      static void buildPlatforms();
-      static void buildDevices();
-      static void buildDevicesUsageMap();
-
-      static const cl::Device& getAvailableDevice();
-      static void printDevicesInfo();
-
-      static bool verbose;
-
     public:
+      //-- Constructors / Destructor --//
       Core(bool useMultipleGPUs = false);
       Core(int deviceIndex);  // Constructor to use a specific GPU device by index
       ~Core();
 
+      //-- Verbose --//
       void setVerbose(bool verbose);
       bool isVerbose() const;
 
+      //-- Source management --//
       void addSourceFile(std::string fileName);
+
+      //-- Kernel management --//
       void addKernel(const std::string& kernelName, ulong nElements, ulong offset = 0);
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
       void clearKernels();
 
+      //-- Buffer management --//
       template<class T> void allocateBuffer(const std::string& name, ulong size);
 
       template<class T> void writeBuffer(const std::vector<T>& hBuffer);
@@ -71,15 +48,47 @@ namespace OpenCLWrapper
 
       template<class T> void syncDevicesBuffers(std::vector<T>& hBuffer);
 
+      //-- Kernel arguments --//
       template<class T> void addArgument(const std::string& kernelName, const std::string& bufferName);
       template<class T> void addArgument(const std::string& kernelName, const std::vector<T>& hBuffer);
       template<class T> void addArgument(const std::string& kernelName, const T& variable);
 
+      //-- Execution --//
       void run();
 
+      //-- Static methods --//
       static void initialize(bool verbose = true);
       static std::map<const cl::Device*, uint>& getDevicesUsage();
       static size_t getNumDevices();
+
+    private:
+      //-- Compute unit management --//
+      void buildComputeUnits();
+      void buildComputeUnitForDevice(int deviceIndex);
+
+      //-- Device job tracking --//
+      void addJobToDevice(const cl::Device& device);
+      void removeJobFromDevice(const cl::Device& device);
+
+      //-- Static initialization helpers --//
+      static void buildPlatforms();
+      static void buildDevices();
+      static void buildDevicesUsageMap();
+      static const cl::Device& getAvailableDevice();
+      static void printDevicesInfo();
+
+      //-- Instance members --//
+      std::vector<ComputeUnit> computeUnits;
+      cl::Program::Sources sources;
+      bool useMultipleGPUs;
+      std::vector<const cl::Device*> devicesInUse;
+
+      //-- Static members --//
+      static std::mutex mutex;
+      static std::vector<cl::Platform> platforms;
+      static std::vector<cl::Device> devices;
+      static std::map<const cl::Device*, uint> devicesUsage;
+      static bool verbose;
   };
 
   template<class T> void Core::allocateBuffer(const std::string& name, ulong size)

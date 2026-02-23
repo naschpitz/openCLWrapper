@@ -20,42 +20,23 @@ namespace OpenCLWrapper
   class ComputeUnit
   {
     public:
+      //-- Constructors --//
       ComputeUnit();
       ComputeUnit(const cl::Device& device, uint index, double fraction, bool last, bool verbose = true);
 
-    private:
-      uint index;
-      double fraction;
-      bool last;
-
-      bool programBuilt = false;
-      bool verbose = true;
-
-      cl::Device device;
-      cl::Context context;
-      cl::CommandQueue queue;
-      cl::Program program;
-      std::vector<Kernel> kernels;
-
-      cl::Program::Sources sources;
-      std::vector<std::string> sourceStrings;  // Store actual strings to keep pointers valid
-
-      std::map<void*, cl::Buffer> hdBufferMap;
-      std::map<std::string, cl::Buffer> dBufferMap;
-
-      void buildContext();
-      void buildQueue();
-      void buildProgram();
-
-    public:
+      //-- Verbose --//
       void setVerbose(bool verbose);
       bool isVerbose() const;
 
+      //-- Source management --//
       void addSource(const std::string& sourceCode);
+
+      //-- Kernel management --//
       void addKernel(const std::string& kernelName, ulong nElements, ulong offset = 0);
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
       void clearKernels();
 
+      //-- Buffer management --//
       template<class T> void allocateBuffer(const std::string& name, ulong size);
 
       template<class T> void writeBuffer(const std::vector<T>& hBuffer);
@@ -64,12 +45,42 @@ namespace OpenCLWrapper
       template<class T> void readBuffer(std::vector<T>& hBuffer);
       template<class T> void readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferReadOffset);
 
+      //-- Kernel arguments --//
       template<class T> void addArgument(const std::string& kernelName, const std::string& bufferName);
       template<class T> void addArgument(const std::string& kernelName, const std::vector<T>& hBuffer);
       template<class T> void addArgument(const std::string& kernelName, const T& variable);
 
+      //-- Execution --//
       void run();
       void waitFinish();
+
+    private:
+      //-- Build helpers --//
+      void buildContext();
+      void buildQueue();
+      void buildProgram();
+
+      //-- Configuration --//
+      uint index;
+      double fraction;
+      bool last;
+      bool programBuilt = false;
+      bool verbose = true;
+
+      //-- OpenCL state --//
+      cl::Device device;
+      cl::Context context;
+      cl::CommandQueue queue;
+      cl::Program program;
+      std::vector<Kernel> kernels;
+
+      //-- Source storage --//
+      cl::Program::Sources sources;
+      std::vector<std::string> sourceStrings;  // Store actual strings to keep pointers valid
+
+      //-- Buffer maps --//
+      std::map<void*, cl::Buffer> hdBufferMap;
+      std::map<std::string, cl::Buffer> dBufferMap;
   };
 
   template<class T> void ComputeUnit::allocateBuffer(const std::string& name, ulong size)

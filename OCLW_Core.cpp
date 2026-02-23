@@ -7,11 +7,16 @@
 
 using namespace OpenCLWrapper;
 
+//-- Static member initializations --//
 std::mutex Core::mutex;
 std::vector<cl::Platform> Core::platforms;
 std::vector<cl::Device> Core::devices;
 std::map<const cl::Device*, uint> Core::devicesUsage;
 bool Core::verbose = true;
+
+//===================================================================================================================//
+//-- Constructors / Destructor --//
+//===================================================================================================================//
 
 Core::Core(bool useMultipleGPUs)
 {
@@ -25,6 +30,8 @@ Core::Core(bool useMultipleGPUs)
   this->buildComputeUnits();
 }
 
+//===================================================================================================================//
+
 Core::Core(int deviceIndex)
 {
   this->useMultipleGPUs = false;
@@ -37,12 +44,18 @@ Core::Core(int deviceIndex)
   this->buildComputeUnitForDevice(deviceIndex);
 }
 
+//===================================================================================================================//
+
 Core::~Core()
 {
   for(auto it = this->devicesInUse.begin(); it != this->devicesInUse.end(); it++) {
     Core::removeJobFromDevice(**it);
   }
 }
+
+//===================================================================================================================//
+//-- Verbose --//
+//===================================================================================================================//
 
 void Core::setVerbose(bool verbose)
 {
@@ -52,10 +65,114 @@ void Core::setVerbose(bool verbose)
   }
 }
 
+//===================================================================================================================//
+
 bool Core::isVerbose() const
 {
   return Core::verbose;
 }
+
+//===================================================================================================================//
+//-- Source management --//
+//===================================================================================================================//
+
+void Core::addSourceFile(std::string fileName)
+{
+  if(Core::verbose) std::cout << "Reading source file...\n";
+
+  std::ifstream sourceFile;
+  sourceFile.open(fileName); // Open the input file
+
+  if((sourceFile.rdstate() & std::ifstream::failbit) != 0) {
+    std::cout << "      Source file not found: " << fileName << "\n";
+    exit(1);
+  }
+
+  std::stringstream stream;
+  stream << sourceFile.rdbuf(); // Read the file.
+  std::string sourceCode = stream.str(); //str holds the content of the file.
+
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->addSource(sourceCode);
+  }
+
+  if(Core::verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
+}
+
+//===================================================================================================================//
+//-- Kernel management --//
+//===================================================================================================================//
+
+void Core::addKernel(const std::string& kernelName, ulong nElements, ulong offset)
+{
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->addKernel(kernelName, nElements, offset);
+  }
+}
+
+//===================================================================================================================//
+
+void Core::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset)
+{
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->addKernel(id, kernelName, nElements, offset);
+  }
+}
+
+//===================================================================================================================//
+
+void Core::clearKernels()
+{
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->clearKernels();
+  }
+}
+
+//===================================================================================================================//
+//-- Execution --//
+//===================================================================================================================//
+
+void Core::run()
+{
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->run();
+  }
+
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->waitFinish();
+  }
+}
+
+//===================================================================================================================//
+//-- Static methods --//
+//===================================================================================================================//
+
+void Core::initialize(bool verbose) {
+  Core::verbose = verbose;
+  Core::buildPlatforms();
+  Core::buildDevices();
+  Core::buildDevicesUsageMap();
+  Core::printDevicesInfo();
+}
+
+//===================================================================================================================//
+
+std::map<const cl::Device*, uint>& Core::getDevicesUsage() {
+  return Core::devicesUsage;
+}
+
+//===================================================================================================================//
+
+size_t Core::getNumDevices() {
+  return Core::devices.size();
+}
+
+//===================================================================================================================//
+//-- Compute unit management (private) --//
+//===================================================================================================================//
 
 void Core::buildComputeUnits()
 {
@@ -117,6 +234,8 @@ void Core::buildComputeUnits()
   }
 }
 
+//===================================================================================================================//
+
 void Core::buildComputeUnitForDevice(int deviceIndex)
 {
   if(Core::verbose) std::cout << "Building compute unit for specific device...\n";
@@ -150,6 +269,10 @@ void Core::buildComputeUnitForDevice(int deviceIndex)
   }
 }
 
+//===================================================================================================================//
+//-- Device job tracking (private) --//
+//===================================================================================================================//
+
 void Core::addJobToDevice(const cl::Device& device)
 {
   this->devicesInUse.push_back(&device);
@@ -157,68 +280,16 @@ void Core::addJobToDevice(const cl::Device& device)
   Core::devicesUsage[&device]++;
 }
 
+//===================================================================================================================//
+
 void Core::removeJobFromDevice(const cl::Device& device)
 {
   Core::devicesUsage[&device]--;
 }
 
-void Core::addSourceFile(std::string fileName)
-{
-  if(Core::verbose) std::cout << "Reading source file...\n";
-
-  std::ifstream sourceFile;
-  sourceFile.open(fileName); // Open the input file
-
-  if((sourceFile.rdstate() & std::ifstream::failbit) != 0) {
-    std::cout << "      Source file not found: " << fileName << "\n";
-    exit(1);
-  }
-
-  std::stringstream stream;
-  stream << sourceFile.rdbuf(); // Read the file.
-  std::string sourceCode = stream.str(); //str holds the content of the file.
-
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
-    it->addSource(sourceCode);
-  }
-
-  if(Core::verbose) {
-    std::cout << " Done!\n";
-    std::cout.flush();
-  }
-}
-
-void Core::addKernel(const std::string& kernelName, ulong nElements, ulong offset)
-{
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
-    it->addKernel(kernelName, nElements, offset);
-  }
-}
-
-void Core::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset)
-{
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
-    it->addKernel(id, kernelName, nElements, offset);
-  }
-}
-
-void Core::clearKernels()
-{
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
-    it->clearKernels();
-  }
-}
-
-void Core::run()
-{
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
-    it->run();
-  }
-
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
-    it->waitFinish();
-  }
-}
+//===================================================================================================================//
+//-- Static initialization helpers (private) --//
+//===================================================================================================================//
 
 void Core::buildPlatforms()
 {
@@ -237,6 +308,8 @@ void Core::buildPlatforms()
     std::cout.flush();
   }
 }
+
+//===================================================================================================================//
 
 void Core::buildDevices()
 {
@@ -265,12 +338,16 @@ void Core::buildDevices()
   }
 }
 
+//===================================================================================================================//
+
 void Core::buildDevicesUsageMap()
 {
   for(std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
       Core::devicesUsage[&*it] = 0;
   }
 }
+
+//===================================================================================================================//
 
 const cl::Device& Core::getAvailableDevice()
 {
@@ -288,6 +365,8 @@ const cl::Device& Core::getAvailableDevice()
 
   return *deviceWithLeastUsage;
 }
+
+//===================================================================================================================//
 
 void Core::printDevicesInfo()
 {
@@ -317,20 +396,4 @@ void Core::printDevicesInfo()
   }
 
   std::cout.flush();
-}
-
-void Core::initialize(bool verbose) {
-  Core::verbose = verbose;
-  Core::buildPlatforms();
-  Core::buildDevices();
-  Core::buildDevicesUsageMap();
-  Core::printDevicesInfo();
-}
-
-std::map<const cl::Device*, uint>& Core::getDevicesUsage() {
-  return Core::devicesUsage;
-}
-
-size_t Core::getNumDevices() {
-  return Core::devices.size();
 }

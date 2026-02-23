@@ -4,10 +4,16 @@
 
 using namespace OpenCLWrapper;
 
+//===================================================================================================================//
+//-- Constructors --//
+//===================================================================================================================//
+
 ComputeUnit::ComputeUnit()
 {
   this->programBuilt = false;
 }
+
+//===================================================================================================================//
 
 ComputeUnit::ComputeUnit(const cl::Device& device, uint index, double fraction, bool last, bool verbose)
 {
@@ -22,6 +28,122 @@ ComputeUnit::ComputeUnit(const cl::Device& device, uint index, double fraction, 
   this->buildContext();
   this->buildQueue();
 }
+
+//===================================================================================================================//
+//-- Verbose --//
+//===================================================================================================================//
+
+void ComputeUnit::setVerbose(bool verbose)
+{
+  this->verbose = verbose;
+}
+
+//===================================================================================================================//
+
+bool ComputeUnit::isVerbose() const
+{
+  return this->verbose;
+}
+
+//===================================================================================================================//
+//-- Source management --//
+//===================================================================================================================//
+
+void ComputeUnit::addSource(const std::string& sourceCode)
+{
+  // Store the string - sources will be rebuilt from sourceStrings in buildProgram()
+  this->sourceStrings.push_back(sourceCode);
+}
+
+//===================================================================================================================//
+//-- Kernel management --//
+//===================================================================================================================//
+
+void ComputeUnit::addKernel(const std::string& kernelName, ulong nElements, ulong offset)
+{
+  this->addKernel(kernelName, kernelName, nElements, offset);
+}
+
+//===================================================================================================================//
+
+void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset)
+{
+  if(!this->programBuilt)
+    this->buildProgram();
+
+  Kernel kernel;
+  kernel.name = id;  // Use id for argument lookup
+  kernel.nElements = nElements;
+  kernel.offset = offset;
+
+  if(this->verbose)
+    std::cout << "Building kernel " << kernelName << " (id: " << id << ")...\n";
+
+  cl_int result;
+  kernel.kernel = cl::Kernel(this->program, kernelName.c_str(), &result);  // Use kernelName for OpenCL lookup
+
+  if(result != CL_SUCCESS) {
+    std::cout << " Error creating kernel " << kernelName << ": " << result << "\n";
+    exit(1);
+  }
+
+  this->kernels.push_back(kernel);
+
+  if(this->verbose) {
+    std::cout << " Done!\n";
+    std::cout.flush();
+  }
+}
+
+//===================================================================================================================//
+
+void ComputeUnit::clearKernels()
+{
+  this->kernels.clear();
+
+  if(this->verbose) {
+    std::cout << "Kernels cleaned\n";
+    std::cout.flush();
+  }
+}
+
+//===================================================================================================================//
+//-- Execution --//
+//===================================================================================================================//
+
+void ComputeUnit::run()
+{
+  for(std::vector<Kernel>::iterator it = this->kernels.begin(); it != this->kernels.end(); it++) {
+    uint count = it->nElements * this->fraction;
+    uint offset = this->index * count + it->offset;
+
+    if(this->last)
+      count = it->nElements - offset;
+
+    cl_int result = this->queue.enqueueNDRangeKernel(it->kernel, offset, cl::NDRange(count), cl::NullRange);
+
+    if(result != CL_SUCCESS) {
+      std::cout << " Error enqueueing kernel " << it->name << ": " << result << "\n";
+      exit(1);
+    }
+
+    this->queue.enqueueBarrier();
+  }
+
+  this->queue.flush();
+  std::cout.flush();
+}
+
+//===================================================================================================================//
+
+void ComputeUnit::waitFinish()
+{
+  this->queue.finish();
+}
+
+//===================================================================================================================//
+//-- Build helpers (private) --//
+//===================================================================================================================//
 
 void ComputeUnit::buildContext()
 {
@@ -42,6 +164,8 @@ void ComputeUnit::buildContext()
   }
 }
 
+//===================================================================================================================//
+
 void ComputeUnit::buildQueue()
 {
   if(this->verbose) std::cout << "Building queue...\n";
@@ -53,6 +177,8 @@ void ComputeUnit::buildQueue()
     std::cout.flush();
   }
 }
+
+//===================================================================================================================//
 
 void ComputeUnit::buildProgram()
 {
@@ -87,92 +213,4 @@ void ComputeUnit::buildProgram()
     std::cout << " Done!\n";
     std::cout.flush();
   }
-}
-
-void ComputeUnit::setVerbose(bool verbose)
-{
-  this->verbose = verbose;
-}
-
-bool ComputeUnit::isVerbose() const
-{
-  return this->verbose;
-}
-
-void ComputeUnit::addSource(const std::string& sourceCode)
-{
-  // Store the string - sources will be rebuilt from sourceStrings in buildProgram()
-  this->sourceStrings.push_back(sourceCode);
-}
-
-void ComputeUnit::addKernel(const std::string& kernelName, ulong nElements, ulong offset)
-{
-  this->addKernel(kernelName, kernelName, nElements, offset);
-}
-
-void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset)
-{
-  if(!this->programBuilt)
-    this->buildProgram();
-
-  Kernel kernel;
-  kernel.name = id;  // Use id for argument lookup
-  kernel.nElements = nElements;
-  kernel.offset = offset;
-
-  if(this->verbose)
-    std::cout << "Building kernel " << kernelName << " (id: " << id << ")...\n";
-
-  cl_int result;
-  kernel.kernel = cl::Kernel(this->program, kernelName.c_str(), &result);  // Use kernelName for OpenCL lookup
-
-  if(result != CL_SUCCESS) {
-    std::cout << " Error creating kernel " << kernelName << ": " << result << "\n";
-    exit(1);
-  }
-
-  this->kernels.push_back(kernel);
-
-  if(this->verbose) {
-    std::cout << " Done!\n";
-    std::cout.flush();
-  }
-}
-
-void ComputeUnit::clearKernels()
-{
-  this->kernels.clear();
-
-  if(this->verbose) {
-    std::cout << "Kernels cleaned\n";
-    std::cout.flush();
-  }
-}
-
-void ComputeUnit::run()
-{
-  for(std::vector<Kernel>::iterator it = this->kernels.begin(); it != this->kernels.end(); it++) {
-    uint count = it->nElements * this->fraction;
-    uint offset = this->index * count + it->offset;
-
-    if(this->last)
-      count = it->nElements - offset;
-
-    cl_int result = this->queue.enqueueNDRangeKernel(it->kernel, offset, cl::NDRange(count), cl::NullRange);
-
-    if(result != CL_SUCCESS) {
-      std::cout << " Error enqueueing kernel " << it->name << ": " << result << "\n";
-      exit(1);
-    }
-
-    this->queue.enqueueBarrier();
-  }
-
-  this->queue.flush();
-  std::cout.flush();
-}
-
-void ComputeUnit::waitFinish()
-{
-  this->queue.finish();
 }
