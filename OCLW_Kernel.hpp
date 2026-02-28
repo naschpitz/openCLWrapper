@@ -20,6 +20,7 @@ namespace OpenCLWrapper
     cl_ulong offset = 0;
     cl::Kernel kernel;
     cl_ulong argsCount = 0;
+    cl_ulong localWorkSize = 0;  // 0 = let OpenCL decide
   };
 }
 

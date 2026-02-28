@@ -124,6 +124,24 @@ void Core::addKernel(const std::string& id, const std::string& kernelName, ulong
 
 //===================================================================================================================//
 
+void Core::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset, ulong localWorkSize)
+{
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->addKernel(id, kernelName, nElements, offset, localWorkSize);
+  }
+}
+
+//===================================================================================================================//
+
+void Core::addLocalArgument(const std::string& kernelName, size_t sizeInBytes)
+{
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->addLocalArgument(kernelName, sizeInBytes);
+  }
+}
+
+//===================================================================================================================//
+
 void Core::clearKernels()
 {
   for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {

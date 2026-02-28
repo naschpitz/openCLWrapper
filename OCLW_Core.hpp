@@ -35,6 +35,7 @@ namespace OpenCLWrapper
       //-- Kernel management --//
       void addKernel(const std::string& kernelName, ulong nElements, ulong offset = 0);
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
+      void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset, ulong localWorkSize);
       void clearKernels();
 
       //-- Buffer management --//
@@ -52,6 +53,7 @@ namespace OpenCLWrapper
       template<class T> void addArgument(const std::string& kernelName, const std::string& bufferName);
       template<class T> void addArgument(const std::string& kernelName, const std::vector<T>& hBuffer);
       template<class T> void addArgument(const std::string& kernelName, const T& variable);
+      void addLocalArgument(const std::string& kernelName, size_t sizeInBytes);
 
       //-- Profiling --//
       void setProfiling(bool enabled);

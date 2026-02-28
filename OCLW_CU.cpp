@@ -136,9 +136,19 @@ void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName
   this->kernels.push_back(kernel);
 
   if(this->verbose) {
-    std::cout << " Done!\n";
+    std::cout << " Done! (nElements=" << nElements << ")\n";
     std::cout.flush();
   }
+}
+
+//===================================================================================================================//
+
+void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset, ulong localWorkSize)
+{
+  this->addKernel(id, kernelName, nElements, offset);
+
+  // Set localWorkSize on the just-added kernel
+  this->kernels.back().localWorkSize = localWorkSize;
 }
 
 //===================================================================================================================//
@@ -150,6 +160,18 @@ void ComputeUnit::clearKernels()
   if(this->verbose) {
     std::cout << "Kernels cleaned\n";
     std::cout.flush();
+  }
+}
+
+//===================================================================================================================//
+
+void ComputeUnit::addLocalArgument(const std::string& kernelName, size_t sizeInBytes)
+{
+  for(std::vector<Kernel>::iterator it = this->kernels.begin(); it != this->kernels.end(); it++) {
+    if(it->name.compare(kernelName) == 0) {
+      it->kernel.setArg(it->argsCount, cl::Local(sizeInBytes));
+      it->argsCount++;
+    }
   }
 }
 
@@ -171,7 +193,16 @@ void ComputeUnit::run()
       count = it->nElements - offset;
 
     cl::Event* eventPtr = this->profiling ? &events[idx] : nullptr;
-    cl_int result = this->queue.enqueueNDRangeKernel(it->kernel, offset, cl::NDRange(count), cl::NullRange, nullptr, eventPtr);
+
+    cl::NDRange localRange = cl::NullRange;
+    if (it->localWorkSize > 0) {
+      localRange = cl::NDRange(it->localWorkSize);
+      // Round up global work size to be a multiple of local work size
+      ulong lws = it->localWorkSize;
+      count = ((count + lws - 1) / lws) * lws;
+    }
+
+    cl_int result = this->queue.enqueueNDRangeKernel(it->kernel, offset, cl::NDRange(count), localRange, nullptr, eventPtr);
 
     if(result != CL_SUCCESS) {
       std::cout << " Error enqueueing kernel " << it->name << ": " << result << "\n";
