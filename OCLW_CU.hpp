@@ -57,7 +57,6 @@ namespace OpenCLWrapper
       template<class T> void addArgument(const std::string& kernelName, const std::string& bufferName);
       template<class T> void addArgument(const std::string& kernelName, const std::vector<T>& hBuffer);
       template<class T> void addArgument(const std::string& kernelName, const T& variable);
-      void addLocalArgument(const std::string& kernelName, size_t sizeInBytes);
 
       //-- Execution --//
       void run();

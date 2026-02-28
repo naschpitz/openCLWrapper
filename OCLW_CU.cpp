@@ -164,18 +164,6 @@ void ComputeUnit::clearKernels()
 }
 
 //===================================================================================================================//
-
-void ComputeUnit::addLocalArgument(const std::string& kernelName, size_t sizeInBytes)
-{
-  for(std::vector<Kernel>::iterator it = this->kernels.begin(); it != this->kernels.end(); it++) {
-    if(it->name.compare(kernelName) == 0) {
-      it->kernel.setArg(it->argsCount, cl::Local(sizeInBytes));
-      it->argsCount++;
-    }
-  }
-}
-
-//===================================================================================================================//
 //-- Execution --//
 //===================================================================================================================//
 
