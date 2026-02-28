@@ -132,6 +132,31 @@ void Core::clearKernels()
 }
 
 //===================================================================================================================//
+//-- Profiling --//
+//===================================================================================================================//
+
+void Core::setProfiling(bool enabled)
+{
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->setProfiling(enabled);
+  }
+}
+
+void Core::printProfilingResults() const
+{
+  for(auto it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->printProfilingResults();
+  }
+}
+
+void Core::resetProfilingResults()
+{
+  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->resetProfilingResults();
+  }
+}
+
+//===================================================================================================================//
 //-- Execution --//
 //===================================================================================================================//
 

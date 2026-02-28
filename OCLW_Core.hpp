@@ -53,6 +53,11 @@ namespace OpenCLWrapper
       template<class T> void addArgument(const std::string& kernelName, const std::vector<T>& hBuffer);
       template<class T> void addArgument(const std::string& kernelName, const T& variable);
 
+      //-- Profiling --//
+      void setProfiling(bool enabled);
+      void printProfilingResults() const;
+      void resetProfilingResults();
+
       //-- Execution --//
       void run();
 

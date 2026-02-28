@@ -12,6 +12,7 @@
 #include <CL/opencl.hpp>
 #include <unistd.h>
 #include <map>
+#include <string>
 
 #include "OCLW_Kernel.hpp"
 
@@ -27,6 +28,12 @@ namespace OpenCLWrapper
       //-- Verbose --//
       void setVerbose(bool verbose);
       bool isVerbose() const;
+
+      //-- Profiling --//
+      void setProfiling(bool enabled);
+      bool isProfiling() const;
+      void printProfilingResults() const;
+      void resetProfilingResults();
 
       //-- Source management --//
       void addSource(const std::string& sourceCode);
@@ -66,6 +73,11 @@ namespace OpenCLWrapper
       bool last;
       bool programBuilt = false;
       bool verbose = true;
+      bool profiling = false;
+
+      //-- Profiling data --//
+      std::map<std::string, double> kernelTotalTime;   // accumulated ms per kernel name
+      std::map<std::string, ulong> kernelCallCount;    // call count per kernel name
 
       //-- OpenCL state --//
       cl::Device device;

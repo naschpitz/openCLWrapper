@@ -46,6 +46,52 @@ bool ComputeUnit::isVerbose() const
 }
 
 //===================================================================================================================//
+//-- Profiling --//
+//===================================================================================================================//
+
+void ComputeUnit::setProfiling(bool enabled)
+{
+  this->profiling = enabled;
+  // Rebuild queue with profiling flag
+  this->buildQueue();
+}
+
+bool ComputeUnit::isProfiling() const
+{
+  return this->profiling;
+}
+
+void ComputeUnit::printProfilingResults() const
+{
+  if (this->kernelTotalTime.empty()) return;
+
+  std::cout << "\n=== OpenCL Kernel Profiling Results ===\n";
+
+  double totalMs = 0;
+  for (const auto& pair : this->kernelTotalTime)
+    totalMs += pair.second;
+
+  for (const auto& pair : this->kernelTotalTime) {
+    auto countIt = this->kernelCallCount.find(pair.first);
+    ulong count = countIt != this->kernelCallCount.end() ? countIt->second : 0;
+    double avgMs = count > 0 ? pair.second / count : 0;
+    double pct = totalMs > 0 ? 100.0 * pair.second / totalMs : 0;
+    std::cout << "  " << pair.first << ": " << pair.second << " ms total, "
+              << count << " calls, " << avgMs << " ms/call, " << pct << "%\n";
+  }
+
+  std::cout << "  TOTAL: " << totalMs << " ms\n";
+  std::cout << "==========================================\n";
+  std::cout.flush();
+}
+
+void ComputeUnit::resetProfilingResults()
+{
+  this->kernelTotalTime.clear();
+  this->kernelCallCount.clear();
+}
+
+//===================================================================================================================//
 //-- Source management --//
 //===================================================================================================================//
 
@@ -113,14 +159,19 @@ void ComputeUnit::clearKernels()
 
 void ComputeUnit::run()
 {
-  for(std::vector<Kernel>::iterator it = this->kernels.begin(); it != this->kernels.end(); it++) {
+  std::vector<cl::Event> events;
+  if (this->profiling) events.resize(this->kernels.size());
+
+  size_t idx = 0;
+  for(std::vector<Kernel>::iterator it = this->kernels.begin(); it != this->kernels.end(); it++, idx++) {
     uint count = it->nElements * this->fraction;
     uint offset = this->index * count + it->offset;
 
     if(this->last)
       count = it->nElements - offset;
 
-    cl_int result = this->queue.enqueueNDRangeKernel(it->kernel, offset, cl::NDRange(count), cl::NullRange);
+    cl::Event* eventPtr = this->profiling ? &events[idx] : nullptr;
+    cl_int result = this->queue.enqueueNDRangeKernel(it->kernel, offset, cl::NDRange(count), cl::NullRange, nullptr, eventPtr);
 
     if(result != CL_SUCCESS) {
       std::cout << " Error enqueueing kernel " << it->name << ": " << result << "\n";
@@ -131,6 +182,20 @@ void ComputeUnit::run()
   }
 
   this->queue.flush();
+
+  if (this->profiling) {
+    this->queue.finish();
+    idx = 0;
+    for(std::vector<Kernel>::iterator it = this->kernels.begin(); it != this->kernels.end(); it++, idx++) {
+      events[idx].wait();
+      cl_ulong start = events[idx].getProfilingInfo<CL_PROFILING_COMMAND_START>();
+      cl_ulong end = events[idx].getProfilingInfo<CL_PROFILING_COMMAND_END>();
+      double ms = (end - start) / 1e6;
+      this->kernelTotalTime[it->name] += ms;
+      this->kernelCallCount[it->name]++;
+    }
+  }
+
   std::cout.flush();
 }
 
@@ -170,7 +235,8 @@ void ComputeUnit::buildQueue()
 {
   if(this->verbose) std::cout << "Building queue...\n";
 
-  this->queue = cl::CommandQueue(this->context, this->device);
+  cl_command_queue_properties props = this->profiling ? CL_QUEUE_PROFILING_ENABLE : 0;
+  this->queue = cl::CommandQueue(this->context, this->device, props);
 
   if(this->verbose) {
     std::cout << " Done!\n";
