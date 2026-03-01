@@ -142,19 +142,23 @@ void Core::clearKernels()
 
 //===================================================================================================================//
 
-void Core::saveKernels()
+std::vector<std::vector<Kernel>> Core::saveKernels()
 {
+  std::vector<std::vector<Kernel>> saved;
+
   for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
-    it->saveKernels();
+    saved.push_back(it->saveKernels());
   }
+
+  return saved;
 }
 
 //===================================================================================================================//
 
-void Core::restoreKernels()
+void Core::restoreKernels(const std::vector<std::vector<Kernel>>& kernels)
 {
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
-    it->restoreKernels();
+  for(size_t i = 0; i < this->computeUnits.size() && i < kernels.size(); i++) {
+    this->computeUnits[i].restoreKernels(kernels[i]);
   }
 }
 

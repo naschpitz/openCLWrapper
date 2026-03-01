@@ -153,16 +153,16 @@ void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName
 
 //===================================================================================================================//
 
-void ComputeUnit::saveKernels()
+std::vector<Kernel> ComputeUnit::saveKernels()
 {
-  this->savedKernels = this->kernels;
+  return this->kernels;
 }
 
 //===================================================================================================================//
 
-void ComputeUnit::restoreKernels()
+void ComputeUnit::restoreKernels(const std::vector<Kernel>& kernels)
 {
-  this->kernels = this->savedKernels;
+  this->kernels = kernels;
 }
 
 //===================================================================================================================//
