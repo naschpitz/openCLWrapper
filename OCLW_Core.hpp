@@ -22,7 +22,7 @@ namespace OpenCLWrapper
     public:
       //-- Constructors / Destructor --//
       Core(bool useMultipleGPUs = false);
-      Core(int deviceIndex);  // Constructor to use a specific GPU device by index
+      Core(int deviceIndex); // Constructor to use a specific GPU device by index
       ~Core();
 
       //-- Verbose --//
@@ -35,28 +35,30 @@ namespace OpenCLWrapper
       //-- Kernel management --//
       void addKernel(const std::string& kernelName, ulong nElements, ulong offset = 0);
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
-      void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset, ulong localWorkSize);
+      void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset,
+                     ulong localWorkSize);
       void clearKernels();
       std::vector<std::vector<Kernel>> saveKernels();
       void restoreKernels(const std::vector<std::vector<Kernel>>& kernels);
 
       //-- Buffer management --//
-      template<class T> void allocateBuffer(const std::string& name, ulong size);
+      template <class T> void allocateBuffer(const std::string& name, ulong size);
 
-      template<class T> void writeBuffer(const std::vector<T>& hBuffer);
-      template<class T> void writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferWriteOffset);
+      template <class T> void writeBuffer(const std::vector<T>& hBuffer);
+      template <class T>
+      void writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferWriteOffset);
 
-      template<class T> void readBuffer(std::vector<T>& hBuffer);
-      template<class T> void readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferReadOffset);
+      template <class T> void readBuffer(std::vector<T>& hBuffer);
+      template <class T> void readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferReadOffset);
 
-      template<class T> void fillBuffer(const std::string& name, const T& pattern, ulong count);
+      template <class T> void fillBuffer(const std::string& name, const T& pattern, ulong count);
 
-      template<class T> void syncDevicesBuffers(std::vector<T>& hBuffer);
+      template <class T> void syncDevicesBuffers(std::vector<T>& hBuffer);
 
       //-- Kernel arguments --//
-      template<class T> void addArgument(const std::string& kernelName, const std::string& bufferName);
-      template<class T> void addArgument(const std::string& kernelName, const std::vector<T>& hBuffer);
-      template<class T> void addArgument(const std::string& kernelName, const T& variable);
+      template <class T> void addArgument(const std::string& kernelName, const std::string& bufferName);
+      template <class T> void addArgument(const std::string& kernelName, const std::vector<T>& hBuffer);
+      template <class T> void addArgument(const std::string& kernelName, const T& variable);
 
       //-- Profiling --//
       void setProfiling(bool enabled);
@@ -101,94 +103,95 @@ namespace OpenCLWrapper
       static bool verbose;
   };
 
-  template<class T> void Core::allocateBuffer(const std::string& name, ulong size)
+  template <class T> void Core::allocateBuffer(const std::string& name, ulong size)
   {
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->allocateBuffer<T>(name, size);
     }
 
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->waitFinish();
     }
   }
 
-  template<class T> void Core::writeBuffer(const std::vector<T>& hBuffer)
+  template <class T> void Core::writeBuffer(const std::vector<T>& hBuffer)
   {
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->writeBuffer<T>(hBuffer);
     }
 
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->waitFinish();
     }
   }
 
-  template<class T> void Core::writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferOffset) {
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  template <class T> void Core::writeBuffer(const std::string& name, const std::vector<T>& hBuffer, ulong dBufferOffset)
+  {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->writeBuffer<T>(name, hBuffer, dBufferOffset);
     }
 
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->waitFinish();
     }
   }
 
-  template<class T> void Core::readBuffer(std::vector<T>& hBuffer)
+  template <class T> void Core::readBuffer(std::vector<T>& hBuffer)
   {
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->readBuffer<T>(hBuffer);
     }
 
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->waitFinish();
     }
   }
 
-  template<class T> void Core::readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferOffset)
+  template <class T> void Core::readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferOffset)
   {
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->readBuffer<T>(name, hBuffer, dBufferOffset);
     }
 
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->waitFinish();
     }
   }
 
-  template<class T> void Core::fillBuffer(const std::string& name, const T& pattern, ulong count)
+  template <class T> void Core::fillBuffer(const std::string& name, const T& pattern, ulong count)
   {
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->fillBuffer<T>(name, pattern, count);
     }
 
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->waitFinish();
     }
   }
 
-  template<class T> void Core::syncDevicesBuffers(std::vector<T>& hBuffer)
+  template <class T> void Core::syncDevicesBuffers(std::vector<T>& hBuffer)
   {
     this->readBuffer<T>(hBuffer);
     this->writeBuffer<T>(hBuffer);
   }
 
-  template<class T> void Core::addArgument(const std::string& kernelName, const std::string& bufferName)
+  template <class T> void Core::addArgument(const std::string& kernelName, const std::string& bufferName)
   {
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->addArgument<T>(kernelName, bufferName);
     }
   }
 
-  template<class T> void Core::addArgument(const std::string& kernelName, const std::vector<T>& hBuffer)
+  template <class T> void Core::addArgument(const std::string& kernelName, const std::vector<T>& hBuffer)
   {
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->addArgument(kernelName, hBuffer);
     }
   }
 
-  template<class T> void Core::addArgument(const std::string& kernelName, const T& variable)
+  template <class T> void Core::addArgument(const std::string& kernelName, const T& variable)
   {
-    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->addArgument(kernelName, variable);
     }
   }

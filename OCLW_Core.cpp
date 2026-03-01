@@ -48,7 +48,7 @@ Core::Core(int deviceIndex)
 
 Core::~Core()
 {
-  for(auto it = this->devicesInUse.begin(); it != this->devicesInUse.end(); it++) {
+  for (auto it = this->devicesInUse.begin(); it != this->devicesInUse.end(); it++) {
     Core::removeJobFromDevice(**it);
   }
 }
@@ -60,7 +60,7 @@ Core::~Core()
 void Core::setVerbose(bool verbose)
 {
   Core::verbose = verbose;
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->setVerbose(verbose);
   }
 }
@@ -78,12 +78,13 @@ bool Core::isVerbose() const
 
 void Core::addSourceFile(std::string fileName)
 {
-  if(Core::verbose) std::cout << "Reading source file...\n";
+  if (Core::verbose)
+    std::cout << "Reading source file...\n";
 
   std::ifstream sourceFile;
   sourceFile.open(fileName); // Open the input file
 
-  if((sourceFile.rdstate() & std::ifstream::failbit) != 0) {
+  if ((sourceFile.rdstate() & std::ifstream::failbit) != 0) {
     std::cout << "      Source file not found: " << fileName << "\n";
     exit(1);
   }
@@ -92,11 +93,11 @@ void Core::addSourceFile(std::string fileName)
   stream << sourceFile.rdbuf(); // Read the file.
   std::string sourceCode = stream.str(); //str holds the content of the file.
 
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->addSource(sourceCode);
   }
 
-  if(Core::verbose) {
+  if (Core::verbose) {
     std::cout << " Done!\n";
     std::cout.flush();
   }
@@ -108,7 +109,7 @@ void Core::addSourceFile(std::string fileName)
 
 void Core::addKernel(const std::string& kernelName, ulong nElements, ulong offset)
 {
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->addKernel(kernelName, nElements, offset);
   }
 }
@@ -117,16 +118,17 @@ void Core::addKernel(const std::string& kernelName, ulong nElements, ulong offse
 
 void Core::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset)
 {
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->addKernel(id, kernelName, nElements, offset);
   }
 }
 
 //===================================================================================================================//
 
-void Core::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset, ulong localWorkSize)
+void Core::addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset,
+                     ulong localWorkSize)
 {
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->addKernel(id, kernelName, nElements, offset, localWorkSize);
   }
 }
@@ -135,7 +137,7 @@ void Core::addKernel(const std::string& id, const std::string& kernelName, ulong
 
 void Core::clearKernels()
 {
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->clearKernels();
   }
 }
@@ -146,7 +148,7 @@ std::vector<std::vector<Kernel>> Core::saveKernels()
 {
   std::vector<std::vector<Kernel>> saved;
 
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     saved.push_back(it->saveKernels());
   }
 
@@ -157,7 +159,7 @@ std::vector<std::vector<Kernel>> Core::saveKernels()
 
 void Core::restoreKernels(const std::vector<std::vector<Kernel>>& kernels)
 {
-  for(size_t i = 0; i < this->computeUnits.size() && i < kernels.size(); i++) {
+  for (size_t i = 0; i < this->computeUnits.size() && i < kernels.size(); i++) {
     this->computeUnits[i].restoreKernels(kernels[i]);
   }
 }
@@ -168,21 +170,21 @@ void Core::restoreKernels(const std::vector<std::vector<Kernel>>& kernels)
 
 void Core::setProfiling(bool enabled)
 {
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->setProfiling(enabled);
   }
 }
 
 void Core::printProfilingResults() const
 {
-  for(auto it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (auto it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->printProfilingResults();
   }
 }
 
 void Core::resetProfilingResults()
 {
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->resetProfilingResults();
   }
 }
@@ -193,11 +195,11 @@ void Core::resetProfilingResults()
 
 void Core::run()
 {
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->run();
   }
 
-  for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
     it->waitFinish();
   }
 }
@@ -206,7 +208,8 @@ void Core::run()
 //-- Static methods --//
 //===================================================================================================================//
 
-void Core::initialize(bool verbose) {
+void Core::initialize(bool verbose)
+{
   Core::verbose = verbose;
   Core::buildPlatforms();
   Core::buildDevices();
@@ -216,13 +219,15 @@ void Core::initialize(bool verbose) {
 
 //===================================================================================================================//
 
-std::map<const cl::Device*, uint>& Core::getDevicesUsage() {
+std::map<const cl::Device*, uint>& Core::getDevicesUsage()
+{
   return Core::devicesUsage;
 }
 
 //===================================================================================================================//
 
-size_t Core::getNumDevices() {
+size_t Core::getNumDevices()
+{
   return Core::devices.size();
 }
 
@@ -232,17 +237,19 @@ size_t Core::getNumDevices() {
 
 void Core::buildComputeUnits()
 {
-  if(Core::verbose) std::cout << "Building compute units...\n";
+  if (Core::verbose)
+    std::cout << "Building compute units...\n";
 
-  if(this->useMultipleGPUs) {
-    if(Core::verbose) std::cout << "      Using all available GPUs.\n";
+  if (this->useMultipleGPUs) {
+    if (Core::verbose)
+      std::cout << "      Using all available GPUs.\n";
 
-    for(std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
+    for (std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
       uint index = std::distance(Core::devices.begin(), it);
       double fraction = 1. / Core::devices.size();
       bool last = false;
 
-      if(std::distance(it, Core::devices.end()) == 1)
+      if (std::distance(it, Core::devices.end()) == 1)
         last = true;
 
       ComputeUnit computeUnit = ComputeUnit(*it, index, fraction, last, Core::verbose);
@@ -262,14 +269,15 @@ void Core::buildComputeUnits()
     auto itLast = Core::devices.end();
     auto it = std::find(itFirst, itLast, device);
 
-    if(it == itLast) {
+    if (it == itLast) {
       std::cout << "      Device not found\n";
       exit(1);
     }
 
     uint deviceIndex = std::distance(itFirst, it);
 
-    if(Core::verbose) std::cout << "      Using GPU #" << deviceIndex << "\n";
+    if (Core::verbose)
+      std::cout << "      Using GPU #" << deviceIndex << "\n";
 
     uint index = 0;
     double fraction = 1;
@@ -284,7 +292,7 @@ void Core::buildComputeUnits()
     Core::mutex.unlock();
   }
 
-  if(Core::verbose) {
+  if (Core::verbose) {
     std::cout << " Done!\n";
     std::cout.flush();
   }
@@ -294,7 +302,8 @@ void Core::buildComputeUnits()
 
 void Core::buildComputeUnitForDevice(int deviceIndex)
 {
-  if(Core::verbose) std::cout << "Building compute unit for specific device...\n";
+  if (Core::verbose)
+    std::cout << "Building compute unit for specific device...\n";
 
   if (deviceIndex < 0 || static_cast<size_t>(deviceIndex) >= Core::devices.size()) {
     std::cout << "      Device index " << deviceIndex << " is out of range (0-" << (Core::devices.size() - 1) << ")\n";
@@ -305,7 +314,8 @@ void Core::buildComputeUnitForDevice(int deviceIndex)
 
   const cl::Device& device = Core::devices[deviceIndex];
 
-  if(Core::verbose) std::cout << "      Using GPU #" << deviceIndex << ": " << device.getInfo<CL_DEVICE_NAME>() << "\n";
+  if (Core::verbose)
+    std::cout << "      Using GPU #" << deviceIndex << ": " << device.getInfo<CL_DEVICE_NAME>() << "\n";
 
   uint index = 0;
   double fraction = 1;
@@ -319,7 +329,7 @@ void Core::buildComputeUnitForDevice(int deviceIndex)
 
   Core::mutex.unlock();
 
-  if(Core::verbose) {
+  if (Core::verbose) {
     std::cout << " Done!\n";
     std::cout.flush();
   }
@@ -349,17 +359,18 @@ void Core::removeJobFromDevice(const cl::Device& device)
 
 void Core::buildPlatforms()
 {
-  if(Core::verbose) std::cout << "Building platform...\n";
+  if (Core::verbose)
+    std::cout << "Building platform...\n";
 
   // Get all platforms (drivers).
   cl::Platform::get(&(Core::platforms));
 
-  if(Core::platforms.size() == 0) {
+  if (Core::platforms.size() == 0) {
     std::cout << "      No platforms found. Check OpenCL installation!\n";
     exit(1);
   }
 
-  if(Core::verbose) {
+  if (Core::verbose) {
     std::cout << " Done!\n";
     std::cout.flush();
   }
@@ -369,26 +380,28 @@ void Core::buildPlatforms()
 
 void Core::buildDevices()
 {
-  if(Core::verbose) std::cout << "Building devices...\n";
+  if (Core::verbose)
+    std::cout << "Building devices...\n";
 
-  for(std::vector<cl::Platform>::iterator it = Core::platforms.begin(); it != Core::platforms.end(); it++) {
-    if(Core::verbose) std::cout << "Platform: " << it->getInfo<CL_PLATFORM_NAME>() << "\n";
+  for (std::vector<cl::Platform>::iterator it = Core::platforms.begin(); it != Core::platforms.end(); it++) {
+    if (Core::verbose)
+      std::cout << "Platform: " << it->getInfo<CL_PLATFORM_NAME>() << "\n";
 
     it->getDevices(CL_DEVICE_TYPE_GPU, &(Core::devices));
 
-    if(Core::devices.size() == 0) {
+    if (Core::devices.size() == 0) {
       std::cout << "      No devices found. Check OpenCL installation!\n";
       exit(1);
     }
 
-    if(Core::verbose) {
-      for(std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
+    if (Core::verbose) {
+      for (std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
         std::cout << "      Device: " << it->getInfo<CL_DEVICE_NAME>() << "\n";
       }
     }
   }
 
-  if(Core::verbose) {
+  if (Core::verbose) {
     std::cout << " Done!\n";
     std::cout.flush();
   }
@@ -398,8 +411,8 @@ void Core::buildDevices()
 
 void Core::buildDevicesUsageMap()
 {
-  for(std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
-      Core::devicesUsage[&*it] = 0;
+  for (std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
+    Core::devicesUsage[&*it] = 0;
   }
 }
 
@@ -412,8 +425,8 @@ const cl::Device& Core::getAvailableDevice()
   uint leastUsage = UINT_MAX;
 
   // In reverse order, so it will prioritize the latest GPU, which is not connected to the video output.
-  for(auto it = Core::devicesUsage.rbegin(); it != Core::devicesUsage.rend(); it++) {
-    if(it->second < leastUsage) {
+  for (auto it = Core::devicesUsage.rbegin(); it != Core::devicesUsage.rend(); it++) {
+    if (it->second < leastUsage) {
       deviceWithLeastUsage = it->first;
       leastUsage = it->second;
     }
@@ -426,11 +439,12 @@ const cl::Device& Core::getAvailableDevice()
 
 void Core::printDevicesInfo()
 {
-  if(!Core::verbose) return;
+  if (!Core::verbose)
+    return;
 
   std::cout << "Devices Information:\n";
 
-  for(std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
+  for (std::vector<cl::Device>::iterator it = Core::devices.begin(); it != Core::devices.end(); it++) {
     std::string deviceName = it->getInfo<CL_DEVICE_NAME>();
     std::string deviceVendor = it->getInfo<CL_DEVICE_VENDOR>();
     std::string driverVersion = it->getInfo<CL_DRIVER_VERSION>();

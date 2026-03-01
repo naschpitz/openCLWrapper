@@ -13,14 +13,13 @@
 
 namespace OpenCLWrapper
 {
-  struct Kernel
-  {
-    std::string name;
-    cl_ulong nElements;
-    cl_ulong offset = 0;
-    cl::Kernel kernel;
-    cl_ulong argsCount = 0;
-    cl_ulong localWorkSize = 0;  // 0 = let OpenCL decide
+  struct Kernel {
+      std::string name;
+      cl_ulong nElements;
+      cl_ulong offset = 0;
+      cl::Kernel kernel;
+      cl_ulong argsCount = 0;
+      cl_ulong localWorkSize = 0; // 0 = let OpenCL decide
   };
 }
 
