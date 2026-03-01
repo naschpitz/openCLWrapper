@@ -43,6 +43,8 @@ namespace OpenCLWrapper
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset, ulong localWorkSize);
       void clearKernels();
+      void saveKernels();
+      void restoreKernels();
 
       //-- Buffer management --//
       template<class T> void allocateBuffer(const std::string& name, ulong size);
@@ -52,6 +54,8 @@ namespace OpenCLWrapper
 
       template<class T> void readBuffer(std::vector<T>& hBuffer);
       template<class T> void readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferReadOffset);
+
+      template<class T> void fillBuffer(const std::string& name, const T& pattern, ulong count);
 
       //-- Kernel arguments --//
       template<class T> void addArgument(const std::string& kernelName, const std::string& bufferName);
@@ -86,6 +90,7 @@ namespace OpenCLWrapper
       cl::CommandQueue queue;
       cl::Program program;
       std::vector<Kernel> kernels;
+      std::vector<Kernel> savedKernels;
 
       //-- Source storage --//
       cl::Program::Sources sources;
@@ -169,6 +174,12 @@ namespace OpenCLWrapper
       count = hBuffer.size() - hBufferWriteOffset;
 
     this->queue.enqueueReadBuffer(dBuffer, CL_TRUE, sizeof(T) * deviceReadOffset, sizeof(T) * count, hBuffer.data() + hBufferWriteOffset);
+  }
+
+  template<class T> void ComputeUnit::fillBuffer(const std::string& name, const T& pattern, ulong count)
+  {
+    cl::Buffer dBuffer = this->dBufferMap[name];
+    this->queue.enqueueFillBuffer(dBuffer, pattern, 0, sizeof(T) * count);
   }
 
   template<class T> void ComputeUnit::addArgument(const std::string& kernelName, const std::string& bufferName)

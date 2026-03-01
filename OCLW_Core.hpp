@@ -37,6 +37,8 @@ namespace OpenCLWrapper
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset, ulong localWorkSize);
       void clearKernels();
+      void saveKernels();
+      void restoreKernels();
 
       //-- Buffer management --//
       template<class T> void allocateBuffer(const std::string& name, ulong size);
@@ -46,6 +48,8 @@ namespace OpenCLWrapper
 
       template<class T> void readBuffer(std::vector<T>& hBuffer);
       template<class T> void readBuffer(const std::string& name, std::vector<T>& hBuffer, ulong dBufferReadOffset);
+
+      template<class T> void fillBuffer(const std::string& name, const T& pattern, ulong count);
 
       template<class T> void syncDevicesBuffers(std::vector<T>& hBuffer);
 
@@ -144,6 +148,17 @@ namespace OpenCLWrapper
   {
     for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
       it->readBuffer<T>(name, hBuffer, dBufferOffset);
+    }
+
+    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+      it->waitFinish();
+    }
+  }
+
+  template<class T> void Core::fillBuffer(const std::string& name, const T& pattern, ulong count)
+  {
+    for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+      it->fillBuffer<T>(name, pattern, count);
     }
 
     for(std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {

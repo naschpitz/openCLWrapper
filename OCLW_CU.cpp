@@ -153,6 +153,20 @@ void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName
 
 //===================================================================================================================//
 
+void ComputeUnit::saveKernels()
+{
+  this->savedKernels = this->kernels;
+}
+
+//===================================================================================================================//
+
+void ComputeUnit::restoreKernels()
+{
+  this->kernels = this->savedKernels;
+}
+
+//===================================================================================================================//
+
 void ComputeUnit::clearKernels()
 {
   this->kernels.clear();
