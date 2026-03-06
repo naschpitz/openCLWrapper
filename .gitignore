@@ -76,7 +76,4 @@ CMakeLists.txt.user*
 # ----------------
 /build
 
-# Augment
-# -------
-.augment/
-INSTRUCTIONS.md
+
