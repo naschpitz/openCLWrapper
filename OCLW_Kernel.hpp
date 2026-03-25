@@ -15,11 +15,13 @@ namespace OpenCLWrapper
 {
   struct Kernel {
       std::string name;
-      cl_ulong nElements;
-      cl_ulong offset = 0;
+      cl_ulong nElementsX; // global size dim 0
+      cl_ulong nElementsY = 1; // global size dim 1 (1 = effectively 1D)
+      cl_ulong offset = 0; // offset in dim 0 (kept for fraction splitting)
       cl::Kernel kernel;
       cl_ulong argsCount = 0;
-      cl_ulong localWorkSize = 0; // 0 = let OpenCL decide
+      cl_ulong localWorkSizeX = 0; // 0 = let OpenCL decide
+      cl_ulong localWorkSizeY = 0; // 0 = let OpenCL decide
   };
 }
 

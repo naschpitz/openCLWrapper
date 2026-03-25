@@ -120,7 +120,8 @@ void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName
 
   Kernel kernel;
   kernel.name = id; // Use id for argument lookup
-  kernel.nElements = nElements;
+  kernel.nElementsX = nElements;
+  kernel.nElementsY = 1;
   kernel.offset = offset;
 
   if (this->verbose)
@@ -150,7 +151,43 @@ void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName
   this->addKernel(id, kernelName, nElements, offset);
 
   // Set localWorkSize on the just-added kernel
-  this->kernels.back().localWorkSize = localWorkSize;
+  this->kernels.back().localWorkSizeX = localWorkSize;
+}
+
+//===================================================================================================================//
+
+void ComputeUnit::addKernel(const std::string& id, const std::string& kernelName, ulong nElementsX, ulong nElementsY,
+                            ulong localWorkSizeX, ulong localWorkSizeY)
+{
+  if (!this->programBuilt)
+    this->buildProgram();
+
+  Kernel kernel;
+  kernel.name = id;
+  kernel.nElementsX = nElementsX;
+  kernel.nElementsY = nElementsY;
+  kernel.offset = 0; // 2D kernels don't use fraction/offset splitting
+
+  if (this->verbose)
+    std::cout << "Building kernel " << kernelName << " (id: " << id << ")...\n";
+
+  cl_int result;
+  kernel.kernel = cl::Kernel(this->program, kernelName.c_str(), &result);
+
+  if (result != CL_SUCCESS) {
+    std::cout << " Error creating kernel " << kernelName << ": " << result << "\n";
+    exit(1);
+  }
+
+  kernel.localWorkSizeX = localWorkSizeX;
+  kernel.localWorkSizeY = localWorkSizeY;
+
+  this->kernels.push_back(kernel);
+
+  if (this->verbose) {
+    std::cout << " Done! (nElementsX=" << nElementsX << ", nElementsY=" << nElementsY << ")\n";
+    std::cout.flush();
+  }
 }
 
 //===================================================================================================================//
@@ -192,25 +229,35 @@ void ComputeUnit::run()
 
   size_t idx = 0;
   for (std::vector<Kernel>::iterator it = this->kernels.begin(); it != this->kernels.end(); it++, idx++) {
-    uint count = it->nElements * this->fraction;
-    uint offset = this->index * count + it->offset;
+    // Dim 0: fraction/offset splitting (existing behavior)
+    uint countX = it->nElementsX * this->fraction;
+    uint offsetX = this->index * countX + it->offset;
 
     if (this->last)
-      count = it->nElements - offset;
+      countX = it->nElementsX - offsetX;
+
+    // Dim 1: always full range (no splitting)
+    uint countY = it->nElementsY;
 
     cl::Event* eventPtr = this->profiling ? &events[idx] : nullptr;
 
     cl::NDRange localRange = cl::NullRange;
 
-    if (it->localWorkSize > 0) {
-      localRange = cl::NDRange(it->localWorkSize);
-      // Round up global work size to be a multiple of local work size
-      ulong lws = it->localWorkSize;
-      count = ((count + lws - 1) / lws) * lws;
+    if (it->localWorkSizeX > 0) {
+      ulong lwsX = it->localWorkSizeX;
+      countX = ((countX + lwsX - 1) / lwsX) * lwsX; // round up dim 0
+
+      // Use lwsY=1 when not specified, to keep local range 2D matching global range
+      ulong lwsY = (it->localWorkSizeY > 0) ? it->localWorkSizeY : 1;
+      countY = ((countY + lwsY - 1) / lwsY) * lwsY; // round up dim 1
+      localRange = cl::NDRange(lwsX, lwsY);
     }
 
+    cl::NDRange globalRange(countX, countY);
+    cl::NDRange offsetRange(offsetX, 0);
+
     cl_int result =
-      this->queue.enqueueNDRangeKernel(it->kernel, offset, cl::NDRange(count), localRange, nullptr, eventPtr);
+      this->queue.enqueueNDRangeKernel(it->kernel, offsetRange, globalRange, localRange, nullptr, eventPtr);
 
     if (result != CL_SUCCESS) {
       std::cout << " Error enqueueing kernel " << it->name << ": " << result << "\n";
