@@ -37,6 +37,8 @@ namespace OpenCLWrapper
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset = 0);
       void addKernel(const std::string& id, const std::string& kernelName, ulong nElements, ulong offset,
                      ulong localWorkSize);
+      void addKernel(const std::string& id, const std::string& kernelName, ulong nElementsX, ulong nElementsY,
+                     ulong localWorkSizeX, ulong localWorkSizeY);
       void clearKernels();
       std::vector<std::vector<Kernel>> saveKernels();
       void restoreKernels(const std::vector<std::vector<Kernel>>& kernels);

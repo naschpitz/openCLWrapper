@@ -135,6 +135,16 @@ void Core::addKernel(const std::string& id, const std::string& kernelName, ulong
 
 //===================================================================================================================//
 
+void Core::addKernel(const std::string& id, const std::string& kernelName, ulong nElementsX, ulong nElementsY,
+                     ulong localWorkSizeX, ulong localWorkSizeY)
+{
+  for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    it->addKernel(id, kernelName, nElementsX, nElementsY, localWorkSizeX, localWorkSizeY);
+  }
+}
+
+//===================================================================================================================//
+
 void Core::clearKernels()
 {
   for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
