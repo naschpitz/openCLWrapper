@@ -76,8 +76,8 @@ CMakeLists.txt.user*
 # ----------------
 /build
 
-# Augment
-.augment/
+# AI agent instructions
+AGENTS.md
 
 # Local planning / todo files
 todo/
