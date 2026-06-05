@@ -86,6 +86,20 @@ void ComputeUnit::printProfilingResults() const
   std::cout.flush();
 }
 
+std::vector<KernelTiming> ComputeUnit::getKernelTimings() const
+{
+  std::vector<KernelTiming> result;
+  result.reserve(this->kernelTotalTime.size());
+
+  for (const auto& pair : this->kernelTotalTime) {
+    auto countIt = this->kernelCallCount.find(pair.first);
+    ulong count = countIt != this->kernelCallCount.end() ? countIt->second : 0;
+    result.push_back({pair.first, pair.second, count});
+  }
+
+  return result;
+}
+
 void ComputeUnit::resetProfilingResults()
 {
   this->kernelTotalTime.clear();

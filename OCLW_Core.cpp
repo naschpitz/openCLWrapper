@@ -192,6 +192,33 @@ void Core::printProfilingResults() const
   }
 }
 
+std::vector<KernelTiming> Core::getKernelTimings() const
+{
+  std::vector<KernelTiming> result;
+
+  for (auto it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {
+    std::vector<KernelTiming> cuTimings = it->getKernelTimings();
+
+    for (const auto& kt : cuTimings) {
+      bool found = false;
+
+      for (auto& existing : result) {
+        if (existing.kernelName == kt.kernelName) {
+          existing.totalMs += kt.totalMs;
+          existing.callCount += kt.callCount;
+          found = true;
+          break;
+        }
+      }
+
+      if (!found)
+        result.push_back(kt);
+    }
+  }
+
+  return result;
+}
+
 void Core::resetProfilingResults()
 {
   for (std::vector<ComputeUnit>::iterator it = this->computeUnits.begin(); it != this->computeUnits.end(); it++) {

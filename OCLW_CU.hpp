@@ -18,6 +18,12 @@
 
 namespace OpenCLWrapper
 {
+  struct KernelTiming {
+      std::string kernelName;
+      double totalMs;
+      ulong callCount;
+  };
+
   class ComputeUnit
   {
     public:
@@ -33,6 +39,7 @@ namespace OpenCLWrapper
       void setProfiling(bool enabled);
       bool isProfiling() const;
       void printProfilingResults() const;
+      std::vector<KernelTiming> getKernelTimings() const;
       void resetProfilingResults();
 
       //-- Source management --//

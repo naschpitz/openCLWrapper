@@ -65,6 +65,7 @@ namespace OpenCLWrapper
       //-- Profiling --//
       void setProfiling(bool enabled);
       void printProfilingResults() const;
+      std::vector<KernelTiming> getKernelTimings() const;
       void resetProfilingResults();
 
       //-- Execution --//
