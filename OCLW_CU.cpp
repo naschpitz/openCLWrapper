@@ -63,21 +63,21 @@ bool ComputeUnit::isProfiling() const
 
 void ComputeUnit::printProfilingResults() const
 {
-  if (this->kernelTotalTime.empty())
+  std::vector<KernelTiming> timings = this->getKernelTimings();
+
+  if (timings.empty())
     return;
 
   std::cout << "\n=== OpenCL Kernel Profiling Results ===\n";
 
   double totalMs = 0;
-  for (const auto& pair : this->kernelTotalTime)
-    totalMs += pair.second;
+  for (const auto& kt : timings)
+    totalMs += kt.totalMs;
 
-  for (const auto& pair : this->kernelTotalTime) {
-    auto countIt = this->kernelCallCount.find(pair.first);
-    ulong count = countIt != this->kernelCallCount.end() ? countIt->second : 0;
-    double avgMs = count > 0 ? pair.second / count : 0;
-    double pct = totalMs > 0 ? 100.0 * pair.second / totalMs : 0;
-    std::cout << "  " << pair.first << ": " << pair.second << " ms total, " << count << " calls, " << avgMs
+  for (const auto& kt : timings) {
+    double avgMs = kt.callCount > 0 ? kt.totalMs / kt.callCount : 0;
+    double pct = totalMs > 0 ? 100.0 * kt.totalMs / totalMs : 0;
+    std::cout << "  " << kt.kernelName << ": " << kt.totalMs << " ms total, " << kt.callCount << " calls, " << avgMs
               << " ms/call, " << pct << "%\n";
   }
 
