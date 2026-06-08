@@ -8,8 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 # Find OpenCL - consumers will need this
 find_package(OpenCL REQUIRED)
@@ -22,7 +21,7 @@ add_library(OpenCLWrapper STATIC
 
 # PUBLIC: Qt and OpenCL are needed by consumers that use OpenCLWrapper
 target_link_libraries(OpenCLWrapper
-  PUBLIC Qt${QT_VERSION_MAJOR}::Core
+  PUBLIC Qt6::Core
   PUBLIC OpenCL::OpenCL
 )
 
