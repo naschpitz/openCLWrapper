@@ -81,6 +81,12 @@ namespace OpenCLWrapper
       void run();
       void waitFinish();
 
+      //-- Device info --//
+      template <cl_int name> auto getDeviceInfo() const
+      {
+        return this->device.getInfo<name>();
+      }
+
     private:
       //-- Build helpers --//
       void buildContext();

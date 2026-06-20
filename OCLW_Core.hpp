@@ -74,6 +74,12 @@ namespace OpenCLWrapper
       //-- Execution --//
       void run();
 
+      //-- Device info --//
+      template <cl_int name> auto getDeviceInfo() const
+      {
+        return this->computeUnits[0].getDeviceInfo<name>();
+      }
+
       //-- Static methods --//
       static void initialize(bool verbose = true);
       static std::map<const cl::Device*, uint>& getDevicesUsage();
