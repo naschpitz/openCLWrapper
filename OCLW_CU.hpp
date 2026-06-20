@@ -35,6 +35,10 @@ namespace OpenCLWrapper
       void setVerbose(bool verbose);
       bool isVerbose() const;
 
+      //-- Fast math --//
+      void setFastMath(bool enabled);
+      bool isFastMath() const;
+
       //-- Profiling --//
       void setProfiling(bool enabled);
       bool isProfiling() const;
@@ -90,6 +94,7 @@ namespace OpenCLWrapper
       bool programBuilt = false;
       bool verbose = true;
       bool profiling = false;
+      bool fastMath = false;
 
       //-- Profiling data --//
       std::map<std::string, double> kernelTotalTime; // accumulated ms per kernel name

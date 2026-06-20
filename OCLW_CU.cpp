@@ -46,6 +46,22 @@ bool ComputeUnit::isVerbose() const
 }
 
 //===================================================================================================================//
+//-- Fast math --//
+//===================================================================================================================//
+
+void ComputeUnit::setFastMath(bool enabled)
+{
+  this->fastMath = enabled;
+}
+
+//===================================================================================================================//
+
+bool ComputeUnit::isFastMath() const
+{
+  return this->fastMath;
+}
+
+//===================================================================================================================//
 //-- Profiling --//
 //===================================================================================================================//
 
@@ -369,8 +385,10 @@ void ComputeUnit::buildProgram()
     exit(1);
   }
 
-  //if(this->program.build({this->device}, "-cl-fast-relaxed-math -cl-mad-enable -cl-no-signed-zeros -cl-strict-aliasing -cl-denorms-are-zero -I ./") != CL_SUCCESS) {
-  if (this->program.build({this->device}, "-I ./") != CL_SUCCESS) {
+  std::string buildOptions =
+    this->fastMath ? "-cl-fast-relaxed-math -cl-mad-enable -cl-no-signed-zeros -cl-denorms-are-zero -I ./" : "-I ./";
+
+  if (this->program.build({this->device}, buildOptions.c_str()) != CL_SUCCESS) {
     std::cout << " Error building: " << this->program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device) << "\n";
     std::cout.flush();
     exit(1);

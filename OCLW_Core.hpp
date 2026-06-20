@@ -29,6 +29,9 @@ namespace OpenCLWrapper
       void setVerbose(bool verbose);
       bool isVerbose() const;
 
+      //-- Fast math --//
+      void setFastMath(bool enabled);
+
       //-- Source management --//
       void addSourceFile(std::string fileName);
 
