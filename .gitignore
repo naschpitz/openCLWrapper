@@ -82,3 +82,9 @@ AGENTS.md
 
 # Local planning / todo files
 todo/
+
+# graphify internal state (deliverables graph.html, GRAPH_REPORT.md, graph.json are tracked)
+graphify-out/cache/
+graphify-out/.graphify_*
+graphify-out/cost.json
+graphify-out/manifest.json
